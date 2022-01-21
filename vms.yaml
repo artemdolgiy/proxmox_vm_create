@@ -1,0 +1,19 @@
+vms:
+  us1:
+    name: us10.example.com
+    ip: 192.168.10.21/24
+    gw: 192.168.10.9
+    dns: 8.8.8.8
+    vmid: 201
+    cores: 2
+    sockets: 1
+    memory: 2048
+  us2:
+    name: us11.example.com
+    ip: 192.168.10.22/24
+    gw: 192.168.10.9
+    dns: 8.8.8.8
+    vmid: 202
+    cores: 2
+    sockets: 1
+    memory: 2048

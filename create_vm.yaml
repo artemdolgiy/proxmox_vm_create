@@ -1,0 +1,58 @@
+---
+- name: Настройка окружения
+  hosts: proxmox
+  vars_files:
+    - vars.yaml
+    - vms.yaml
+  tasks:
+    - name: Клонирование ВМ из шаблона
+      community.general.proxmox_kvm:
+        node: "{{ node }}"
+        name: "{{ item.value.name }}"
+        newid: "{{ item.value.vmid }}"
+        api_user: "{{ api_user }}"
+        api_password: "{{ api_password }}"
+        api_host: "{{ api_host }}"
+        clone: "{{ clone_vm }}"
+        storage: "{{ pve_storage }}"
+        format: qcow2
+        timeout: 500
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Настройка IP адресов
+      command: "qm set {{ item.value.vmid }}  --ipconfig0 gw={{ item.value.gw }},ip={{ item.value.ip }}"
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Настройка DNS
+      command: "qm set {{ item.value.vmid }}  --nameserver {{ item.value.dns }}"
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Копирование SSH ключей в ВМ
+      command: "qm set {{ item.value.vmid }} --sshkey {{ key_name }}"
+      args:
+        chdir: ~/.ssh
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Обновление параметров ВМ
+      community.general.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_user: "{{ api_user }}"
+        api_password: "{{ api_password }}"
+        cores: "{{ item.value.cores }}"
+        sockets: "{{ item.value.sockets }}"
+        memory: "{{ item.value.memory }}"
+        update: true
+        vmid: "{{ item.value.vmid }}"
+        node: "{{ node }}"
+        name: "{{ item.value.name }}"
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Запуск ВМ
+      community.general.proxmox_kvm:
+        api_host: "{{ api_host }}"
+        api_password: "{{ api_password }}"
+        api_user: "{{ api_user }}"
+        vmid: "{{ item.value.vmid }}"
+        node: "{{ node }}"
+        state: started
+      loop: "{{ lookup('dict', vms) }}"

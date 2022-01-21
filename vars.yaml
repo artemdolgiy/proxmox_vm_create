@@ -1,0 +1,7 @@
+pve_storage: local-lvm
+api_host: 192.168.13.9
+api_user: root@pam
+api_password: securePassword
+node: pve
+clone_vm: ubuntu-2004-cloudinit-template
+key_name: id_rsa.pub
